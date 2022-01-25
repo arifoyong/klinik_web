@@ -22,5 +22,6 @@ func ConnectDB() {
 	}
 
 	db.AutoMigrate(&Nota{})
+	db.AutoMigrate(&Patient{})
 	DB = db
 }
