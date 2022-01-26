@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Nota struct {
-	ID             uint      `json:"id" gorm:"primary_key"`
+	ID             uint      `json:"id"`
 	Date           time.Time `json:"date"`
 	Nota_id        uint      `json:"nota_id"`
 	Drug_name      string    `json:"drug_name"`
