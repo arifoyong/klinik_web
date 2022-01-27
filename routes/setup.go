@@ -14,6 +14,7 @@ func Setup(router *gin.Engine, port string) {
 	// NotaRoutes(router)
 	PatientRoutes(router)
 	VisitRoutes(router)
+	DrugRoutes(router)
 
 	router.Run("localhost:" + port)
 }
