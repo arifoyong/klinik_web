@@ -13,7 +13,7 @@ func Setup(router *gin.Engine, port string) {
 
 	// NotaRoutes(router)
 	PatientRoutes(router)
-	// VisitRoutes(router)
+	VisitRoutes(router)
 
 	router.Run("localhost:" + port)
 }
