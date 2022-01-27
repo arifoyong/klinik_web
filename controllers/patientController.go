@@ -4,31 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/arifoyong/klinik/models"
 	"github.com/gin-gonic/gin"
 )
-
-type AddPatientVal struct {
-	Firstname string    `json:"firstname"`
-	Lastname  string    `json:"lastname"`
-	IC        string    `json:"ic" validate:"required"`
-	DOB       time.Time `json:"dob" validate:"required"`
-	Email     string    `json:"email" validate:"required"`
-	Phone     string    `json:"phone" validate:"required"`
-	Address   string    `json:"address"`
-}
-
-type EditPatientVal struct {
-	Firstname string    `json:"firstname"`
-	Lastname  string    `json:"lastname"`
-	IC        string    `json:"ic"`
-	DOB       time.Time `json:"dob"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
-}
 
 // GetPatients get information about all patients
 // and return as JSON
@@ -43,33 +22,15 @@ func GetPatients(c *gin.Context) {
 
 	var patients []models.Patient
 	for rows.Next() {
-		var id uint
-		var firstname string
-		var lastname string
-		var ic string
-		var dob time.Time
-		var email string
-		var phone string
-		var address string
+		var patient models.Patient
+		err = rows.Scan(&patient.ID, &patient.Firstname, &patient.Lastname, &patient.IC, &patient.DOB, &patient.Email, &patient.Phone, &patient.Address)
 
-		err = rows.Scan(&id, &firstname, &lastname, &ic, &dob, &email, &phone, &address)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		newPatient := models.Patient{
-			ID:        id,
-			Firstname: firstname,
-			Lastname:  lastname,
-			IC:        ic,
-			DOB:       dob,
-			Email:     email,
-			Phone:     phone,
-			Address:   address,
-		}
-
-		patients = append(patients, newPatient)
+		patients = append(patients, patient)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": patients})
@@ -91,32 +52,15 @@ func GetPatientByName(c *gin.Context) {
 
 	var patients []models.Patient
 	for rows.Next() {
-		var id uint
-		var firstname string
-		var lastname string
-		var ic string
-		var dob time.Time
-		var email string
-		var phone string
-		var address string
+		var patient models.Patient
+		err = rows.Scan(&patient.ID, &patient.Firstname, &patient.Lastname, &patient.IC, &patient.DOB, &patient.Email, &patient.Phone, &patient.Address)
 
-		err = rows.Scan(&id, &firstname, &lastname, &ic, &dob, &email, &phone, &address)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		newPatient := models.Patient{
-			ID:        id,
-			Firstname: firstname,
-			Lastname:  lastname,
-			IC:        ic,
-			DOB:       dob,
-			Email:     email,
-			Phone:     phone,
-			Address:   address,
-		}
-		patients = append(patients, newPatient)
+		patients = append(patients, patient)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": patients})
@@ -147,74 +91,110 @@ func GetPatientById(c *gin.Context) {
 	}
 }
 
-// // AddPatient create a patient based on JSON parameters
-// // provided. If successful, patient will be returned
-// // as JSON
-// func AddPatient(c *gin.Context) {
-// 	var input AddPatientVal
-// 	var patient models.Patient
+// AddPatient create a patient based on JSON parameters
+// provided. If successful, patient will be returned
+// as JSON
+func AddPatient(c *gin.Context) {
+	var input models.Patient
 
-// 	if err := c.ShouldBindJSON(&input); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	db := models.SetupDB()
 
-// 	validate := validator.New()
-// 	if err := validate.Struct(input); err != nil {
-// 		validationErrors := err.(validator.ValidationErrors)
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors.Error()})
-// 		return
-// 	}
+	if err := c.ShouldBind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	patient.Firstname = input.Firstname
-// 	patient.Lastname = input.Lastname
-// 	patient.Email = input.Email
-// 	patient.IC = input.IC
-// 	patient.DOB = input.DOB
-// 	patient.Address = input.Address
-// 	patient.Phone = input.Phone
+	// validate := validator.New()
+	// if err := validate.Struct(input); err != nil {
+	// 	validationErrors := err.(validator.ValidationErrors)
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors.Error()})
+	// 	return
+	// }
 
-// 	if err := models.DB.Create(&patient).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	sqlStatement := `INSERT INTO patients (firstname, lastname, ic, dob, email, phone, address)
+						VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 
-// 	c.JSON(http.StatusOK, gin.H{"data": patient})
-// }
+	_, err := db.Exec(sqlStatement, input.Firstname, input.Lastname, input.IC, input.DOB, input.Email, input.Phone, input.Address)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-// // EditPatient get patient based on ID given in parameter
-// // perform update & return the result as JSON
-// func EditPatient(c *gin.Context) {
-// 	var input EditPatientVal
-// 	var patient models.Patient
+	c.JSON(http.StatusOK, gin.H{"data": "success"})
+}
 
-// 	if err := c.ShouldBindJSON(&input); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+// EditPatient get patient based on ID given in parameter
+// perform update & return the result as JSON
+func EditPatient(c *gin.Context) {
+	var patient models.Patient
+	db := models.SetupDB()
 
-// 	if err := models.DB.Where("id = ?", c.Param("id")).First(&patient).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	sqlStatement := `SELECT * FROM patients WHERE id=$1`
+	if err := db.QueryRow(sqlStatement, c.Param("id")).Scan(
+		&patient.ID,
+		&patient.Firstname,
+		&patient.Lastname,
+		&patient.IC,
+		&patient.DOB,
+		&patient.Email,
+		&patient.Phone,
+		&patient.Address); err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+	}
 
-// 	if err := models.DB.Model(&patient).Updates(input).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	var input models.Patient
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
 
-// 	c.JSON(http.StatusOK, gin.H{"data": "update success"})
-// }
+	if input.Firstname != nil {
+		patient.Firstname = input.Firstname
+	}
+	if input.Lastname != nil {
+		patient.Lastname = input.Lastname
+	}
 
-// // DeletePatient find patient by ID given in parameter
-// // and return the status as JSON
-// func DeletePatient(c *gin.Context) {
-// 	var patient models.Patient
-// 	if err := models.DB.Where("id = ?", c.Param("id")).First(&patient).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	if input.IC != nil {
+		patient.IC = input.IC
+	}
+	if input.DOB != nil {
+		patient.DOB = input.DOB
+	}
+	if input.Email != nil {
+		patient.Email = input.Email
+	}
+	if input.Phone != nil {
+		patient.Phone = input.Phone
+	}
+	if input.Address != nil {
+		patient.Address = input.Address
+	}
 
-// 	models.DB.Delete(&patient)
-// 	c.JSON(http.StatusOK, gin.H{"data": "delete success"})
-// }
+	sqlStatement = `UPDATE patients SET firstname=$1, lastname=$2, ic=$3, dob=$4, email=$5, address=$6, phone=$7 WHERE id=$8`
+	_, err := db.Exec(sqlStatement, patient.Firstname, patient.Lastname, patient.IC, patient.DOB, patient.Email, patient.Address, patient.Phone, c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": "update success"})
+}
+
+// DeletePatient find patient by ID given in parameter
+// and return the status as JSON
+func DeletePatient(c *gin.Context) {
+	db := models.SetupDB()
+
+	sqlStatement := `DELETE FROM patients where id = $1`
+	_, err := db.Exec(sqlStatement, c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": "delete success"})
+}
