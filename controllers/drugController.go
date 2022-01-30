@@ -12,6 +12,7 @@ import (
 // in request body and return a JSON response
 func AddDrug(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	var input models.Drug
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -32,6 +33,7 @@ func AddDrug(c *gin.Context) {
 // return as JSON
 func GetAllDrugs(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	sqlStatement := `SELECT * FROM drugs`
 	rows, err := db.Query(sqlStatement)
@@ -56,6 +58,7 @@ func GetAllDrugs(c *gin.Context) {
 // and return as JSON
 func GetDrugById(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	var drug models.Drug
 	sqlStatement := `SELECT * FROM drugs WHERE drug_id = $1`
@@ -74,6 +77,7 @@ func GetDrugById(c *gin.Context) {
 // and return the status as JSON
 func EditDrug(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	var drug models.Drug
 	sqlStatement := `SELECT * FROM drugs WHERE drug_id = $1`
@@ -113,6 +117,8 @@ func EditDrug(c *gin.Context) {
 // and return status as JSON
 func DeleteDrug(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
+
 	sqlStatement := `DELETE FROM drugs WHERE drug_id = $1`
 	_, err := db.Exec(sqlStatement, c.Param("id"))
 	if err != nil {

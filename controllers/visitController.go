@@ -3,10 +3,23 @@ package controllers
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/arifoyong/klinik/models"
 	"github.com/gin-gonic/gin"
 )
+
+type GetVisitQry struct {
+	ID              uint      `json:"id"`
+	Date            time.Time `json:"date"`
+	Patient_id      uint      `json:"patient_id"`
+	Firstname       *string   `json:"firstname"`
+	Lastname        *string   `json:"lastname"`
+	IC              *string   `json:"ic" `
+	Problems        *string   `json:"problems"`
+	Diagnosis       *string   `json:"diagnosis"`
+	Prescription_id uint      `json:"prescription_id"`
+}
 
 // ListAllVisits get all visits
 // and return as JSON
@@ -39,10 +52,14 @@ func GetAllVisits(c *gin.Context) {
 // and return it as JSON
 func GetVisitById(c *gin.Context) {
 	db := models.SetupDB()
-	var visit models.Visit
+	var visit GetVisitQry
 
-	sqlStatement := `SELECT * FROM visits WHERE id = $1`
-	err := db.QueryRow(sqlStatement, c.Param("id")).Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis, &visit.Prescription_id)
+	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
+													patients.firstname, patients.lastname, patients.ic  
+									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) 
+									WHERE visits.id = $1`
+	err := db.QueryRow(sqlStatement, c.Param("id")).Scan(&visit.ID, &visit.Date, &visit.Patient_id,
+		&visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Firstname, &visit.Lastname, &visit.IC)
 	switch err {
 	case sql.ErrNoRows:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found"})
