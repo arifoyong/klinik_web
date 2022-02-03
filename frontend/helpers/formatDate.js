@@ -13,7 +13,11 @@ export function dd_mmm_yyyy(strDate) {
 
 export function yyyy_mm_dd(strDate) {
   const dt = new Date(strDate)
-  return dt.toISOString().split('T')[0]
+  if (isNaN(dt))  {
+    return ""
+  } else {
+    return dt.toISOString().split('T')[0]
+  }
 }
 
 

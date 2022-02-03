@@ -1,9 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useEffect,  useState} from 'react'
 import ReactDOM from 'react-dom'
 import { XCircleIcon } from '@heroicons/react/solid'
 
 
-const Modal = ({show, onClose, children, title}) => {
+const Modal = ({ onClose, children, title}) => {
   const [isBrowser, setIsBrowser] = useState(false)
 
   useEffect(() => {
@@ -15,7 +15,7 @@ const Modal = ({show, onClose, children, title}) => {
     onClose()
   }
   
-  const ModalContent = show ? (
+  const ModalContent =  (
     <div className="fixed z-10 inset-0 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen 
                       pt-4 px-4 pb-20 text-center sm:block sm:p-0 bg-gray-500 bg-opacity-75">
@@ -36,8 +36,7 @@ const Modal = ({show, onClose, children, title}) => {
       {/* <p className="text-blue-800">Modal</p>
         <button onClick={handleCloseClick}>close</button> */}
     </div>
-  ) : null;
-
+  )
   if (isBrowser) {
     return ReactDOM.createPortal(
       ModalContent,
