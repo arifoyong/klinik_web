@@ -32,6 +32,9 @@ const Layout = ({children, ...customMeta}) => {
                 <div className="">
                     {children}
                 </div>
+                <div id="toast-container">
+
+                </div>
             </div>
         </>
     )

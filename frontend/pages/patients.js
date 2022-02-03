@@ -1,10 +1,10 @@
 import {useState} from 'react'
 import Layout from '../components/Layout'
-import PatientModal from '../components/PatientModal'
+import PatientModal from '../components//Modal/PatientModal'
 import { PencilIcon, TrashIcon, PlusCircleIcon } from '@heroicons/react/solid'
 import { dd_mmm_yyyy} from '../helpers/formatDate'
 import {API} from '../config'
-
+import {toast} from '../components/Alert/Alert'
 
 const blankPatient = {
   id: -1,
@@ -17,9 +17,7 @@ const blankPatient = {
   address:""
 }
 
-const updatePatients = () => {
-  
-}
+
 
 const Patient = ({data}) => {
   const [showModal, setShowModal] = useState(false)
@@ -45,7 +43,7 @@ const Patient = ({data}) => {
     if (confirmDelete) {
       //Logic to delete the item
       const res = await fetch(
-        `${API}/patients/${patient.id}`,
+        `${API}/patient/${patient.id}`,
         {
           headers: {
             'Content-Type': 'application/json'
@@ -57,7 +55,7 @@ const Patient = ({data}) => {
       const result = await res.json()
       console.log(result)
       if (result.error) {
-        alert(result.error)
+        toast.notify(result.error)
       }
   
       const allRes = await fetch(`${API}/patients`)
@@ -69,7 +67,7 @@ const Patient = ({data}) => {
 
   return (
   <Layout>
-    <main className="px-4">
+    <main>
       <h2 className="text-3xl py-2">List of Patients</h2>
       {showModal && <PatientModal currentPatient={selectedPatient} closeModal={closeModal}/> }
       <table className="table-auto w-full">

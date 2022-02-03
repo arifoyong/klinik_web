@@ -1,9 +1,9 @@
 import {useState } from 'react'
 
 import Modal from './Modal'
-import {getToday, yyyy_mm_dd} from '../helpers/formatDate'
-import {API} from '../config'
-
+import {getToday, yyyy_mm_dd} from '../../helpers/formatDate'
+import {API} from '../../config'
+import {toast} from '../Alert/Alert'
 
 const PatientModal = ({currentPatient,  closeModal}) => {
   const [patient, setPatient] = useState(currentPatient)
@@ -38,7 +38,7 @@ const PatientModal = ({currentPatient,  closeModal}) => {
     const result = await res.json()
     console.log(result)
     if (result.error) {
-      alert(result.error)
+      toast.notify(result.error, "error")
     } 
 
     closeModal()
@@ -70,7 +70,7 @@ const PatientModal = ({currentPatient,  closeModal}) => {
     const result = await res.json()
     console.log(result)
     if (result.error) {
-      alert(result.error)
+      toast.notify(result.error, "error")
     } 
 
     closeModal()
@@ -85,57 +85,57 @@ const PatientModal = ({currentPatient,  closeModal}) => {
             First name
           </label>
           <input name="firstname" type="text" placeholder="John" value={patient.firstname} required
-              onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="lastname">
             Last name
           </label>
           <input name="lastname" type="text" placeholder="Doe" value={patient.lastname} required
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="dob">
             Date of birth
           </label>
           <input name="dob" type="date" placeholder="31/12/1990" max={getToday()} value={yyyy_mm_dd(patient.dob)} required
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="email">
             Email
           </label>
           <input name="email" type="email" placeholder="johndoe@email.com" value={patient.email} required
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="ic">
             IC no
           </label>
           <input name="ic" type="text" placeholder="B71637182" value={patient.ic} required
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="phone">
             Phone no
           </label>
           <input name="phone" type="text" placeholder="85228191" value={patient.phone} required
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500"/>
       </div>
       <div className="md:flex md:items-center mb-6">
           <label className="md:w-1/3 text-gray-500  block pr-4 md:text-right" htmlFor="address">
             Address
           </label>
           <textarea name="address" type="text" placeholder="81 Burlington Avenue 5, Singapore" value={patient.address}
-               onChange={handleChange} 
-              className="md:w-2/3 bg-gray-200 py-1 px-4 text-base text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500">
-                </textarea>
+                onChange={handleChange} 
+                className="md:w-2/3 bg-gray-200 py-1 px-4 text-base text-gray-700 border-gray-200 border-2 rounded focus:bg-white focus:border-blue-500">
+          </textarea>
       </div>
 
       
