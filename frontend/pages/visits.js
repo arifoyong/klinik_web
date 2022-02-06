@@ -36,7 +36,7 @@ const Visit = ({data}) => {
           </tr>
         </thead>
         <tbody> 
-          {data.map((visit) => (
+          {data && data.map((visit) => (
             <tr key={visit.id}>
               <td className="px-2 py-2">{visit.firstname}</td>
               <td className="px-2 py-2">{visit.lastname}</td>

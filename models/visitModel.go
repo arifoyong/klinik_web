@@ -9,4 +9,5 @@ type Visit struct {
 	Problems        *string   `json:"problems"`
 	Diagnosis       *string   `json:"diagnosis"`
 	Prescription_id uint      `json:"prescription_id"`
+	Invoice_id      *uint     `json:"invoice_id"`
 }

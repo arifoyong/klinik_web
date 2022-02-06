@@ -26,17 +26,19 @@ type GetVisitQry struct {
 func GetAllVisits(c *gin.Context) {
 	db := models.SetupDB()
 
-	sqlStatement := `SELECT * FROM visits`
+	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
+										patients.firstname, patients.lastname, patients.ic  
+									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) `
 	rows, err := db.Query(sqlStatement)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var visits []models.Visit
+	var visits []GetVisitQry
 	for rows.Next() {
-		var visit models.Visit
-		err := rows.Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis, &visit.Prescription_id)
+		var visit GetVisitQry
+		err := rows.Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Firstname, &visit.Lastname, &visit.IC)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

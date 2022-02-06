@@ -13,12 +13,14 @@ import (
 // and return as JSON
 func GetPatients(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM patients")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	defer rows.Close()
 
 	var patients []models.Patient
 	for rows.Next() {
@@ -41,6 +43,7 @@ func GetPatients(c *gin.Context) {
 // and return as JSON
 func GetPatientByName(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	arg := "%" + strings.ToLower(c.Param("name")) + "%"
 	sqlStatement := `SELECT * FROM patients WHERE LOWER(firstname) LIKE $1 OR LOWER(lastname) LIKE $1`
@@ -49,6 +52,7 @@ func GetPatientByName(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	defer rows.Close()
 
 	var patients []models.Patient
 	for rows.Next() {
@@ -71,6 +75,7 @@ func GetPatientByName(c *gin.Context) {
 func GetPatientById(c *gin.Context) {
 	var patient models.Patient
 	db := models.SetupDB()
+	defer db.Close()
 
 	sqlStatement := `SELECT * FROM patients WHERE id=$1`
 	switch err := db.QueryRow(sqlStatement, c.Param("id")).Scan(
@@ -96,8 +101,8 @@ func GetPatientById(c *gin.Context) {
 // as JSON
 func AddPatient(c *gin.Context) {
 	var input models.Patient
-
 	db := models.SetupDB()
+	defer db.Close()
 
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -128,6 +133,7 @@ func AddPatient(c *gin.Context) {
 func EditPatient(c *gin.Context) {
 	var patient models.Patient
 	db := models.SetupDB()
+	defer db.Close()
 
 	sqlStatement := `SELECT * FROM patients WHERE id=$1`
 	if err := db.QueryRow(sqlStatement, c.Param("id")).Scan(
@@ -188,6 +194,7 @@ func EditPatient(c *gin.Context) {
 // and return the status as JSON
 func DeletePatient(c *gin.Context) {
 	db := models.SetupDB()
+	defer db.Close()
 
 	sqlStatement := `DELETE FROM patients where id = $1`
 	_, err := db.Exec(sqlStatement, c.Param("id"))
