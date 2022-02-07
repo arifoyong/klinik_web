@@ -8,7 +8,7 @@ import (
 
 func Setup(router *gin.Engine, port string) {
 	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"msg": "Main page"})
+		c.JSON(http.StatusOK, gin.H{"data": "Main page"})
 	})
 
 	// NotaRoutes(router)

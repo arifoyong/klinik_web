@@ -12,15 +12,11 @@ import (
 // GetPatients get information about all patients
 // and return as JSON
 func GetPatients(c *gin.Context) {
-	db := models.SetupDB()
-	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM patients")
+	rows, err := models.DB.Query("SELECT * FROM patients")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	defer rows.Close()
 
 	var patients []models.Patient
 	for rows.Next() {
@@ -33,6 +29,10 @@ func GetPatients(c *gin.Context) {
 		}
 
 		patients = append(patients, patient)
+	}
+	if err = rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": patients})
@@ -42,12 +42,9 @@ func GetPatients(c *gin.Context) {
 // GetPatientByName find a patient with name given as parameter
 // and return as JSON
 func GetPatientByName(c *gin.Context) {
-	db := models.SetupDB()
-	defer db.Close()
-
 	arg := "%" + strings.ToLower(c.Param("name")) + "%"
 	sqlStatement := `SELECT * FROM patients WHERE LOWER(firstname) LIKE $1 OR LOWER(lastname) LIKE $1`
-	rows, err := db.Query(sqlStatement, arg)
+	rows, err := models.DB.Query(sqlStatement, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,6 +63,10 @@ func GetPatientByName(c *gin.Context) {
 
 		patients = append(patients, patient)
 	}
+	if err = rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": patients})
 }
@@ -74,11 +75,9 @@ func GetPatientByName(c *gin.Context) {
 // and return it as JSON
 func GetPatientById(c *gin.Context) {
 	var patient models.Patient
-	db := models.SetupDB()
-	defer db.Close()
 
 	sqlStatement := `SELECT * FROM patients WHERE id=$1`
-	switch err := db.QueryRow(sqlStatement, c.Param("id")).Scan(
+	switch err := models.DB.QueryRow(sqlStatement, c.Param("id")).Scan(
 		&patient.ID,
 		&patient.Firstname,
 		&patient.Lastname,
@@ -101,8 +100,6 @@ func GetPatientById(c *gin.Context) {
 // as JSON
 func AddPatient(c *gin.Context) {
 	var input models.Patient
-	db := models.SetupDB()
-	defer db.Close()
 
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -119,7 +116,7 @@ func AddPatient(c *gin.Context) {
 	sqlStatement := `INSERT INTO patients (firstname, lastname, ic, dob, email, phone, address)
 						VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 
-	_, err := db.Exec(sqlStatement, input.Firstname, input.Lastname, input.IC, input.DOB, input.Email, input.Phone, input.Address)
+	_, err := models.DB.Exec(sqlStatement, input.Firstname, input.Lastname, input.IC, input.DOB, input.Email, input.Phone, input.Address)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -132,11 +129,9 @@ func AddPatient(c *gin.Context) {
 // perform update & return the result as JSON
 func EditPatient(c *gin.Context) {
 	var patient models.Patient
-	db := models.SetupDB()
-	defer db.Close()
 
 	sqlStatement := `SELECT * FROM patients WHERE id=$1`
-	if err := db.QueryRow(sqlStatement, c.Param("id")).Scan(
+	if err := models.DB.QueryRow(sqlStatement, c.Param("id")).Scan(
 		&patient.ID,
 		&patient.Firstname,
 		&patient.Lastname,
@@ -181,7 +176,7 @@ func EditPatient(c *gin.Context) {
 	}
 
 	sqlStatement = `UPDATE patients SET firstname=$1, lastname=$2, ic=$3, dob=$4, email=$5, address=$6, phone=$7 WHERE id=$8`
-	_, err := db.Exec(sqlStatement, patient.Firstname, patient.Lastname, patient.IC, patient.DOB, patient.Email, patient.Address, patient.Phone, c.Param("id"))
+	_, err := models.DB.Exec(sqlStatement, patient.Firstname, patient.Lastname, patient.IC, patient.DOB, patient.Email, patient.Address, patient.Phone, c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -193,11 +188,8 @@ func EditPatient(c *gin.Context) {
 // DeletePatient find patient by ID given in parameter
 // and return the status as JSON
 func DeletePatient(c *gin.Context) {
-	db := models.SetupDB()
-	defer db.Close()
-
 	sqlStatement := `DELETE FROM patients where id = $1`
-	_, err := db.Exec(sqlStatement, c.Param("id"))
+	_, err := models.DB.Exec(sqlStatement, c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

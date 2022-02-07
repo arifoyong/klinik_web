@@ -24,16 +24,15 @@ type GetVisitQry struct {
 // ListAllVisits get all visits
 // and return as JSON
 func GetAllVisits(c *gin.Context) {
-	db := models.SetupDB()
-
 	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
 										patients.firstname, patients.lastname, patients.ic  
 									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) `
-	rows, err := db.Query(sqlStatement)
+	rows, err := models.DB.Query(sqlStatement)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	defer rows.Close()
 
 	var visits []GetVisitQry
 	for rows.Next() {
@@ -53,14 +52,13 @@ func GetAllVisits(c *gin.Context) {
 // GetVisitById get visit by id specified in parameter
 // and return it as JSON
 func GetVisitById(c *gin.Context) {
-	db := models.SetupDB()
 	var visit GetVisitQry
 
 	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
 													patients.firstname, patients.lastname, patients.ic  
 									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) 
 									WHERE visits.id = $1`
-	err := db.QueryRow(sqlStatement, c.Param("id")).Scan(&visit.ID, &visit.Date, &visit.Patient_id,
+	err := models.DB.QueryRow(sqlStatement, c.Param("id")).Scan(&visit.ID, &visit.Date, &visit.Patient_id,
 		&visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Firstname, &visit.Lastname, &visit.IC)
 	switch err {
 	case sql.ErrNoRows:
@@ -75,8 +73,6 @@ func GetVisitById(c *gin.Context) {
 // AddVisit add visit with json data provided in request body
 // and return the status as JSON
 func AddVisit(c *gin.Context) {
-	db := models.SetupDB()
-
 	var input models.Visit
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -86,7 +82,7 @@ func AddVisit(c *gin.Context) {
 	sqlStatement := `INSERT INTO visits(date, patient_id, problems, diagnosis, prescription_id)
 	VALUES($1, $2, $3, $4, $5)`
 
-	_, err := db.Exec(sqlStatement, input.Date, input.Patient_id, input.Problems, input.Diagnosis, input.Prescription_id)
+	_, err := models.DB.Exec(sqlStatement, input.Date, input.Patient_id, input.Problems, input.Diagnosis, input.Prescription_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -97,10 +93,8 @@ func AddVisit(c *gin.Context) {
 
 // func EditVisit(c *gin.Context)   {}
 func DeleteVisit(c *gin.Context) {
-	db := models.SetupDB()
-
 	sqlStatement := `DELETE FROM visits WHERE id = $1`
-	_, err := db.Exec(sqlStatement, c.Param("id"))
+	_, err := models.DB.Exec(sqlStatement, c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

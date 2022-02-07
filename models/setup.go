@@ -15,18 +15,24 @@ const (
 	dbname   = "klinik"
 )
 
+var DB *sql.DB
+
 // SetupDB open connection to DB
 // and return instance of DB
-func SetupDB() *sql.DB {
+func ConnectDatabase() {
+	var err error
 	// dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", "postgres", "postgres", "klinik")
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
-	db, err := sql.Open("postgres", psqlInfo)
-
+	DB, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
-		panic("Failed to connect to DB")
+		panic(err)
 	}
 
-	return db
+	if err = DB.Ping(); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Database connection successful")
 }
