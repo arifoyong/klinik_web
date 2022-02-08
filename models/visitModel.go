@@ -8,6 +8,7 @@ type Visit struct {
 	Patient_id      uint      `json:"patient_id"`
 	Problems        *string   `json:"problems"`
 	Diagnosis       *string   `json:"diagnosis"`
-	Prescription_id uint      `json:"prescription_id"`
+	Prescription_id *uint     `json:"prescription_id"`
 	Invoice_id      *uint     `json:"invoice_id"`
+	Status          uint      `json:"status"`
 }

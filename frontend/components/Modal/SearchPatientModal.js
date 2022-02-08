@@ -4,17 +4,20 @@ import {getToday, yyyy_mm_dd} from '../../helpers/formatDate'
 import {API} from '../../config'
 import {toast} from '../Alert/Alert'
 
+
+const blankPatient = {
+  firstname: "",
+  lastname: "", 
+  ic: "", 
+  dob: "",
+  email: "", 
+  phone: "", 
+  address: "", 
+  id: ""
+}
+
 const SearchPatientModal = ({ closeModal}) => {
-  const [curPatient, setCurPatient] = useState({
-    firstname: "",
-    lastname: "", 
-    ic: "", 
-    dob: "",
-    email: "", 
-    phone: "", 
-    address: "", 
-    id: ""
-  })
+  const [curPatient, setCurPatient] = useState(blankPatient)
 
   const [patients, setPatients] = useState([])
   const [suggestionActive, setSuggestionActive] = useState(false)
@@ -48,6 +51,7 @@ const SearchPatientModal = ({ closeModal}) => {
         setSuggestionActive(true)
       } else {
         setSuggestionActive(false)
+        setCurPatient(blankPatient)
         setCursor(0)
       }
     }
@@ -81,6 +85,26 @@ const SearchPatientModal = ({ closeModal}) => {
     if (e.keyCode === 40 && cursor < suggestionList.length) {
       setCursor(cursor+1)
     }
+  }
+
+  const handleSubmit = async () => {
+    const curDate = new Date()
+    const res = await fetch(`${API}/visits`, {
+      body: JSON.stringify({
+        date: curDate.toISOString(),
+        patient_id: curPatient.id
+      }),
+      headers: {'Content-Type': 'application/json'},
+      method: 'POST'
+    })
+
+    const result = await res.json()
+    console.log(result)
+    if (result.error) {
+      toast.notify(result.error, "error")
+    } 
+
+    closeModal()
   }
   
 
@@ -167,8 +191,11 @@ const SearchPatientModal = ({ closeModal}) => {
       <div className="md:flex md:items-center mb-6">
         <div className="md:w-1/3"></div>
         <div className="md:w-2/3">
-          <button 
-                className="shadow bg-blue-500 text-white rounded py-2 px-4 hover:bg-blue-700 focus:shadow-outline focus:outline-none">
+          <button onClick={() => handleSubmit()}
+                disabled={curPatient.id === ""}
+                className="shadow bg-blue-500 text-white rounded py-2 px-4 
+                          disabled: bg-blue-300
+                          hover:bg-blue-700 focus:shadow-outline focus:outline-none">
             Register</button>
         </div>
       </div>

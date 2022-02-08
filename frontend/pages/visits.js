@@ -8,10 +8,15 @@ import {toast} from '../components/Alert/Alert'
 
 
 const Visit = ({data}) => {
+  const [patients, setPatients] = useState(data)
   const [showModal, setShowModal] = useState(false)
 
-  const closeModal = () => {
+  const closeModal = async () => {
     setShowModal(false)
+
+    const res = await fetch(`${API}/visits`)
+    const jsonRes =await res.json()
+    setPatients(jsonRes.data)
   }
 
   return (
@@ -21,8 +26,8 @@ const Visit = ({data}) => {
       <table className="table-auto w-full">
         <thead className="bg-blue-700 text-white">
           <tr>
-            <td className="px-2 py-2">Firstname</td>
-            <td className="px-2 py-2">Lastname</td>
+          <td className="px-2 py-2">Status</td>
+            <td className="px-2 py-2">Name</td>
             <td className="px-2 py-2">IC</td>
             <td className="px-2 py-2">Visit date</td>
             <td className="px-2 py-2">Problems</td>
@@ -36,10 +41,10 @@ const Visit = ({data}) => {
           </tr>
         </thead>
         <tbody> 
-          {data && data.map((visit) => (
+          {patients && patients.map((visit) => (
             <tr key={visit.id}>
-              <td className="px-2 py-2">{visit.firstname}</td>
-              <td className="px-2 py-2">{visit.lastname}</td>
+              <td className="px-2 py-2">{visit.status}</td>
+              <td className="px-2 py-2">{visit.firstname} {visit.lastname}</td>
               <td className="px-2 py-2">{visit.ic}</td>
               <td className="px-2 py-2">{dd_mmm_yyyy(visit.date)}</td>
               <td className="px-2 py-2">{visit.problems}</td>

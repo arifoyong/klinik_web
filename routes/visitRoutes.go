@@ -7,7 +7,8 @@ import (
 
 func VisitRoutes(router *gin.Engine) {
 	router.GET("/visits", controllers.GetAllVisits)
-	router.GET("/visits/:id", controllers.GetVisitById)
+	router.GET("/visits/id/:id", controllers.GetVisitById)
+	router.GET("/visits/status/:status", controllers.GetVisitByStatus)
 	router.POST("/visits", controllers.AddVisit)
 	router.DELETE("/visits/:id", controllers.DeleteVisit)
 }

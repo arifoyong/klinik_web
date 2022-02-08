@@ -18,14 +18,15 @@ type GetVisitQry struct {
 	IC              *string   `json:"ic" `
 	Problems        *string   `json:"problems"`
 	Diagnosis       *string   `json:"diagnosis"`
-	Prescription_id uint      `json:"prescription_id"`
+	Prescription_id *uint     `json:"prescription_id"`
+	Status          uint      `json:"status"`
 }
 
 // ListAllVisits get all visits
 // and return as JSON
 func GetAllVisits(c *gin.Context) {
 	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
-										patients.firstname, patients.lastname, patients.ic  
+										visits.status, patients.firstname, patients.lastname, patients.ic  
 									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) `
 	rows, err := models.DB.Query(sqlStatement)
 	if err != nil {
@@ -37,7 +38,8 @@ func GetAllVisits(c *gin.Context) {
 	var visits []GetVisitQry
 	for rows.Next() {
 		var visit GetVisitQry
-		err := rows.Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Firstname, &visit.Lastname, &visit.IC)
+		err := rows.Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis, &visit.Prescription_id,
+			&visit.Status, &visit.Firstname, &visit.Lastname, &visit.IC)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -55,11 +57,11 @@ func GetVisitById(c *gin.Context) {
 	var visit GetVisitQry
 
 	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
-													patients.firstname, patients.lastname, patients.ic  
+													visits.status, patients.firstname, patients.lastname, patients.ic  
 									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) 
 									WHERE visits.id = $1`
 	err := models.DB.QueryRow(sqlStatement, c.Param("id")).Scan(&visit.ID, &visit.Date, &visit.Patient_id,
-		&visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Firstname, &visit.Lastname, &visit.IC)
+		&visit.Problems, &visit.Diagnosis, &visit.Prescription_id, &visit.Status, &visit.Firstname, &visit.Lastname, &visit.IC)
 	switch err {
 	case sql.ErrNoRows:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found"})
@@ -68,6 +70,44 @@ func GetVisitById(c *gin.Context) {
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
+}
+
+// GetVisitById get visit by status specified in parameter
+// and return it as JSON
+// 0 - pending for consultation
+// 1 - pending for drug dispensing
+// 2 - completed
+func GetVisitByStatus(c *gin.Context) {
+	sqlStatement := `SELECT visits.id, visits.date, visits.patient_id, visits.problems, visits.diagnosis, visits.prescription_id,
+													visits.status, patients.firstname, patients.lastname, patients.ic  
+									FROM visits INNER JOIN	patients ON (visits.patient_id = patients.id) 
+									WHERE visits.status = $1`
+
+	rows, err := models.DB.Query(sqlStatement, c.Param("status"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var visits []GetVisitQry
+	for rows.Next() {
+		var visit GetVisitQry
+		err := rows.Scan(&visit.ID, &visit.Date, &visit.Patient_id, &visit.Problems, &visit.Diagnosis,
+			&visit.Prescription_id, &visit.Status, &visit.Firstname, &visit.Lastname, &visit.IC)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		visits = append(visits, visit)
+	}
+	if err = rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": visits})
 }
 
 // AddVisit add visit with json data provided in request body
