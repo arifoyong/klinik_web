@@ -1,4 +1,5 @@
 import {useState} from 'react'
+import Link from 'next/link'
 import Layout from '../components/Layout'
 import SearchPatientModal from '../components//Modal/SearchPatientModal'
 import { PencilIcon, TrashIcon, PlusCircleIcon } from '@heroicons/react/solid'
@@ -52,8 +53,10 @@ const Visit = ({data}) => {
               <td className="px-2 py-2">{visit.prescription_id}</td>
               <td className="px-2 py-2">
                 <div className="flex space-x-1">
-                  <PencilIcon className="w-4 h-4 hover:cursor-pointer hover:text-blue-700" 
-                              />
+                  <Link href = {`/visit/${visit.id}`}>
+                    <PencilIcon className="w-4 h-4 hover:cursor-pointer hover:text-blue-700" 
+                                />
+                  </Link>
                   <TrashIcon className="w-4 h-4 hover:cursor-pointer hover:text-blue-700"
                               />
                 </div>
